@@ -7,7 +7,7 @@ const ALIVE = 1;
 const DEAD  = 0;
 
 // Initialize Dimensions for Board 
-dimensionLengths = new Array(dimensions).fill(length+2)
+dimensionLengths = new Array(dimensions).fill(length)
 
 /*
 
@@ -59,25 +59,25 @@ const ruleFunctionNegative = (neighbours, dimensions) => {
 
 state = {
     rules:generateRuleDic(),
-    board:nj.zeros(dimensionLengths),
+    board:[...Array(length)].map(x=>Array(length).fill(0))
 }
 
 
 let automataStep = () => {
     
-    const kernel = nj.ones(new Array(dimensions).fill(3))
-    kernel.set(...new Array(dimensions).fill([1]), -(3 ** dimensions))
+    let kernel = tf.tensor([[1,1,1], [1, -(3 ** dimensions),1], [1, 1, 1]], dtype=tf.uint8)
+    kernel = kernel.expandDims(2).expandDims(3)
 
-    console.log(kernel)
-    const output = nj.convolve(state.board, kernel)
-    console.log(output.flatten().tolist())
-    console.log(output)
-    const trueOutput = output.flatten().tolist().map((x) => state.rules[x])
-    console.log(trueOutput[0])
-    console.log(trueOutput[1])
-    console.log(trueOutput[100])
-    console.log(trueOutput[101])
+    let in_board = tf.tensor(state.board)
+    in_board = in_board.expandDims(2)
 
+    let out = tf.conv2d(in_board, kernel, 1, 'same').arraySync()
+    for (let i = 0; i < out.length; i++){
+        for (let j = 0; j < out[i].length; j++){
+            out[i][j] = state.rules[out[i][j]]
+        }
+    }
+    return out
 }
 
 /*
@@ -88,13 +88,12 @@ let automataStep = () => {
 1 1 0
 */
 
-state.board.set(0,0,1);
-state.board.set(0,1,1);
-state.board.set(1,1,1);
+state.board[0][0] = 1;
+state.board[1][0] = 1;
+state.board[1][1] = 1;
 
-automataStep();
+automataStep()
 
-console.log(state)
 // var scene = new THREE.Scene();
 // var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
@@ -118,3 +117,4 @@ console.log(state)
 //     renderer.render( scene, camera );
 // };
 // animate();
+ruleFunctionNegative()
