@@ -5,6 +5,7 @@ const length = 100;
 
 const ALIVE = 1;
 const DEAD  = 0;
+const TOTAL_STEPS = 10;
 
 // Initialize Dimensions for Board 
 dimensionLengths = new Array(dimensions).fill(length)
@@ -66,7 +67,7 @@ state = {
 let automataStep = () => {
     
     let kernel = tf.tensor([[1,1,1], [1, -(3 ** dimensions),1], [1, 1, 1]], dtype=tf.uint8)
-    kernel = kernel.expandDims(2).expandDims(3)
+    kernel = kernel.reshape([3, 3, 1, 1])
 
     let in_board = tf.tensor(state.board)
     in_board = in_board.expandDims(2)
@@ -77,7 +78,7 @@ let automataStep = () => {
             out[i][j] = state.rules[out[i][j]]
         }
     }
-    return out
+    state.board = out
 }
 
 /*
@@ -88,33 +89,45 @@ let automataStep = () => {
 1 1 0
 */
 
-state.board[0][0] = 1;
-state.board[1][0] = 1;
-state.board[1][1] = 1;
+state.board[30][30] = 1
+state.board[31][30] = 1
+state.board[32][30] = 1
+state.board[33][30] = 1
+state.board[34][30] = 1
 
-automataStep()
+state.board[34][32] = 1
+state.board[30][32] = 1
 
-// var scene = new THREE.Scene();
-// var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+state.board[30][34] = 1
+state.board[31][34] = 1
+state.board[32][34] = 1
+state.board[33][34] = 1
+state.board[34][34] = 1
 
-// var renderer = new THREE.WebGLRenderer();
-// renderer.setSize( window.innerWidth, window.innerHeight );
-// document.body.appendChild( renderer.domElement );
 
-// var geometry = new THREE.BoxGeometry();
-// var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-// var cube = new THREE.Mesh( geometry, material );
-// scene.add( cube );
+let prettyprint = (arr) => {
+    mat = ""
+    for (let i = 0; i < arr.length; i++){
+        outstring = ""
+        for (let j = 0; j < arr.length; j++){
+            if(arr[i][j] != 0){
+                outstring += '■'
+            }
+            else{
+                outstring += '\xa0\xa0'
+            }
+        }
+        outstring += '\n'
+        mat += outstring
+    }
+    return mat   
+}
 
-// camera.position.z = 5;
-
-// var animate = function () {
-//     requestAnimationFrame( animate );
-
-//     cube.rotation.x += 0.01;
-//     cube.rotation.y += 0.01;
-
-//     renderer.render( scene, camera );
-// };
-// animate();
-ruleFunctionNegative()
+let stepForward = () => {
+    setInterval(() => {
+    console.log("clicked")
+    let s = prettyprint(state.board)
+    document.getElementById("board").innerText = s
+    automataStep()
+    steps++;}, 200)
+}
