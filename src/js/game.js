@@ -6,6 +6,7 @@ const length = 100;
 const ALIVE = 1;
 const DEAD  = 0;
 const TOTAL_STEPS = 10;
+let steps = 0;
 
 // Initialize Dimensions for Board 
 dimensionLengths = new Array(dimensions).fill(length)
@@ -81,29 +82,47 @@ let automataStep = () => {
     state.board = out
 }
 
-/*
-1 0 0
-1 1 0
 
-1 1 0
-1 1 0
-*/
 
-state.board[30][30] = 1
-state.board[31][30] = 1
-state.board[32][30] = 1
-state.board[33][30] = 1
-state.board[34][30] = 1
+const startPattern = `
 
-state.board[34][32] = 1
-state.board[30][32] = 1
 
-state.board[30][34] = 1
-state.board[31][34] = 1
-state.board[32][34] = 1
-state.board[33][34] = 1
-state.board[34][34] = 1
 
+
+              * * *
+              *   *
+              *   *
+              *   *
+              * * *
+
+
+
+
+
+
+                        *                    
+                      * *                    
+            **      **            **          
+           *   *    **            **        
+**        *     *   **                      
+**        *   * **    * *                    
+          *     *       *                    
+           *   *                           
+            **
+`;
+
+
+let generateStartState = (state, pattern) => {
+    let lines = pattern.split('\n');
+    lines.forEach((line, i) => {
+        [...line].forEach((char, j) => {
+            state.board[i][j] = char == "*" ? 1 : 0
+        })
+    });
+
+}
+
+generateStartState(state, startPattern);
 
 let prettyprint = (arr) => {
     mat = ""
@@ -125,7 +144,6 @@ let prettyprint = (arr) => {
 
 let stepForward = () => {
     setInterval(() => {
-    console.log("clicked")
     let s = prettyprint(state.board)
     document.getElementById("board").innerText = s
     automataStep()
