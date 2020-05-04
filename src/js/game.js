@@ -5,6 +5,8 @@ const ALIVE = 1;
 const DEAD  = 0;
 const TOTAL_STEPS = 10;
 let steps = 0;
+const LENGTH = 100
+const DIMENSIONS = 2;
 
 // Initialize state.dimensions for Board 
 
@@ -18,12 +20,12 @@ Any dead cell with exactly three live neighbours becomes a live cell, as if by r
 */
 let state = {
     rules:undefined,
-    //board:[...Array(length)].map(x=>Array(length).fill(0)),
-    board:new Array(300).fill(0),
-    dimensions: 1,
-    // kernel: [[1,1,1], [1, -(3 ** 1),1], [1, 1, 1]],
-    kernel:[4,2,1],
-    length: 300
+    board:[...Array(LENGTH)].map(x=>Array(LENGTH).fill(0)),
+    // board:new Array(LENGTH).fill(0),
+    dimensions: DIMENSIONS,
+    kernel: [[1,1,1], [1, -(3 ** DIMENSIONS),1], [1, 1, 1]],
+    // kernel:[4,2,1],
+    length: LENGTH
 }
 
 
@@ -80,15 +82,14 @@ const ruleFunctionNegative = (neighbours) => {
 }
 
 // state.rules = generate1DRuleDic("01011010");
-state.rules = generate1DRuleDic("00011110");
-dimensionLengths = new Array(state.dimensions).fill(state.length)
+state.rules = generateRuleDic();
+let dimensionLengths = new Array(state.dimensions).fill(state.length)
 console.log(state.kernel);
 
 
 let automataStep = () => {
-    console.log("stepped");
     let out, in_board, kernel;
-    kernel = tf.tensor(state.kernel, dtype=tf.uint8)
+    kernel = tf.tensor(state.kernel)
     kernel = kernel.expandDims(state.dimensions).expandDims(state.dimensions + 1)
 
     in_board = tf.tensor(state.board)
@@ -118,7 +119,7 @@ let automataStep = () => {
                     .arraySync()
                     .map(x => state.rules[x])
                 ).reshape(in_board.squeeze().shape).arraySync();
-    // console.log(state.board);
+    console.log(state.rules);
 }
 
 
@@ -149,7 +150,7 @@ const startPattern = `
            *   *                           
             **
 `;
-startPatternRule30 = "                                                                                                                                              *          "
+let startPatternRule30 = "                                                                                                                                              *          "
 
 let generateStartState = (state, pattern) => {
     let lines = pattern.split('\n');
@@ -168,7 +169,7 @@ let generateStartState = (state, pattern) => {
     }
 }
 
-generateStartState(state, startPatternRule30);
+generateStartState(state, startPattern);
 
 console.log(state.board)
 
@@ -192,7 +193,7 @@ let prettyprint = (arr) => {
 
 
 let res = []
-let stepForward = () => {
+let autoStepForward = () => {
     let out_board;
     switch(state.dimensions){
         case 1:
@@ -212,5 +213,27 @@ let stepForward = () => {
     out_board = prettyprint(out_board)
     document.getElementById("board").innerText = out_board
     document.getElementById("board").style.color = `rgb(${Math.floor(Math.random()*255)},${Math.floor(Math.random()*255)},${Math.floor(Math.random()*255)})`
-    setTimeout(() => stepForward(), 100);
+    setTimeout(() => autoStepForward(), 100);
 }
+
+let stepForward = () => {
+    let out_board;
+    switch(state.dimensions){
+        case 1:
+            automataStep()
+            res.push(state.board)
+            if (res.length > state.length){
+                console.log("poppin");
+                res.shift();
+            }
+            out_board = res
+            break
+        case 2:
+            out_board = state.board
+            automataStep()
+            break
+    }
+    return {board:out_board, state:state};
+}
+
+export {stepForward, state}
