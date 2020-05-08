@@ -3,16 +3,37 @@ import {stepForward, state} from './game.js'
 var camera, scene, renderer;
 var cube;
 
-var cubeSize = 4;
 
+var config = function() {
+    this.color = "#ffae23"
+    this.cubeSize = 4
+};
+
+
+var cfg = new config();
+var gui = new dat.GUI({name: 'Cellular Automata'});
+
+var f1 = gui.addFolder('Render Options');
+f1.addColor(cfg, 'color')
+f1.add(cfg, 'cubeSize', 1, 10)
+
+
+
+var cubeSize = 4;
 var geometry = new THREE.PlaneGeometry(cubeSize, cubeSize);
-var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+var material = new THREE.MeshBasicMaterial( { color: cfg.color } );
 
 var spriteMaterial = new THREE.SpriteMaterial();
 
 
 init();
 animate();
+
+
+
+
+
+
 
 function init() {
 
@@ -83,20 +104,26 @@ function drawWindow(board){
     })
 }
 
+function updateParams(){
+    material = new THREE.MeshBasicMaterial( { color: cfg.color } );
+    cubeSize = cfg.cubeSize;
+    geometry = new THREE.PlaneGeometry(cubeSize, cubeSize);
+}
 
 function animate() {
-    requestAnimationFrame( animate );
+    //requestAnimationFrame( animate );
 
 
-    // setTimeout( function() {
+    setTimeout( function() {
 
-    //     requestAnimationFrame( animate );
+        requestAnimationFrame( animate );
 
-    // }, 1000 / 1 );
+    }, 50);
 
     console.time('someFunction')
     let {board, state} = stepForward();
 
+    updateParams();
     clearWindow();
 
     //renderer.setClearColor (0x000000, 1);
