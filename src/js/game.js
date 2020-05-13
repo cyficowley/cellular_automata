@@ -5,8 +5,8 @@ const ALIVE = 1;
 const DEAD  = 0;
 const TOTAL_STEPS = 10;
 let steps = 0;
-const LENGTH = 100
-const DIMENSIONS = 2;
+const LENGTH = 10
+const DIMENSIONS = 3;
 
 // Initialize state.dimensions for Board 
 
@@ -18,12 +18,17 @@ Any live cell with more than three live neighbours dies, as if by overpopulation
 Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
 
 */
+let kernel3 = [...Array(3)].map(x=>[...Array(3)].map(x=>Array(3).fill(1)))
+kernel3[1][1][1] = -(3**3)
+
 let state = {
     rules:undefined,
-    board:[...Array(LENGTH)].map(x=>Array(LENGTH).fill(0)),
+    // board:[...Array(LENGTH)].map(x=>Array(LENGTH).fill(0)),
+    board:[...Array(LENGTH)].map(x=>[...Array(LENGTH)].map(x=>Array(LENGTH).fill(0))),
     // board:new Array(LENGTH).fill(0),
     dimensions: DIMENSIONS,
-    kernel: [[1,1,1], [1, -(3 ** DIMENSIONS),1], [1, 1, 1]],
+    // kernel: [[1,1,1], [1, -(3 ** DIMENSIONS),1], [1, 1, 1]],
+    kernel: kernel3,
     // kernel:[4,2,1],
     length: LENGTH
 }
@@ -61,7 +66,7 @@ const ruleFunctionNegative = (neighbours) => {
     
     let nr = neighbours/(3**state.dimensions-1)
     if(living){
-        if(nr < 0.25){ //1
+        if(nr < 0.1){ //1
             return DEAD;
         }
         else if(nr < 0.5){ //2 3 
@@ -83,7 +88,6 @@ const ruleFunctionNegative = (neighbours) => {
 
 // state.rules = generate1DRuleDic("01011010");
 state.rules = generateRuleDic();
-let dimensionLengths = new Array(state.dimensions).fill(state.length)
 console.log(state.kernel);
 
 
@@ -150,6 +154,12 @@ const startPattern = `
            *   *                           
             **
 `;
+const threedstart = `
+
+  * * *
+   * *
+  * * * 
+`;
 let startPatternRule30 = "                                                                                                                                              *          "
 
 let generateStartState = (state, pattern) => {
@@ -160,6 +170,15 @@ let generateStartState = (state, pattern) => {
             state.board[j] = char == "*" ? 1 : 0
         })
     }
+    else if(state.dimensions == 3){
+        for (let z=0; z < state.length; z++){
+            lines.forEach((line, i) => {
+                [...line].forEach((char, j) => {
+                    state.board[i][j][z] = char == "*" ? 1 : 0
+                })
+            });
+        }
+    }
     else{
         lines.forEach((line, i) => {
             [...line].forEach((char, j) => {
@@ -169,7 +188,7 @@ let generateStartState = (state, pattern) => {
     }
 }
 
-generateStartState(state, startPattern);
+generateStartState(state, threedstart);
 
 console.log(state.board)
 
@@ -229,6 +248,10 @@ let stepForward = () => {
             out_board = res
             break
         case 2:
+            out_board = state.board
+            automataStep()
+            break
+        case 3: 
             out_board = state.board
             automataStep()
             break
